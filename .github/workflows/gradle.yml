@@ -1,0 +1,52 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Java CI with Gradle
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        java: [
+          21
+        ]
+        os: [ ubuntu-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: |
+            ${{ matrix.java }}
+          distribution: 'temurin'
+      - name: Grant execute permission for gradlew
+        if: ${{ runner.os != 'Windows' }}
+        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Execute Gradle build
+        run: ./gradlew build
+      - name: Upload build reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports-${{ runner.os }}-jdk${{ matrix.java }}
+          path: |
+            build/reports/
+      - name: Capture build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ runner.os }}-jdk${{ matrix.java }}
+          path: |
+            build/libs/
