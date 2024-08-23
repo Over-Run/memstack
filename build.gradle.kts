@@ -33,7 +33,7 @@ val jdkEarlyAccessDoc: String? by rootProject
 val targetJavaVersion = jdkVersion.toInt()
 
 val projDevelopers = arrayOf(
-    Developer("example")
+    Developer("squid233")
 )
 
 data class Organization(
@@ -85,7 +85,7 @@ repositories {
 }
 
 dependencies {
-    // add your dependencies
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
 }
 
 tasks.withType<JavaCompile> {
@@ -98,6 +98,7 @@ tasks.withType<JavaCompile> {
 
 tasks.withType<Test> {
     if (jdkEnablePreview.toBoolean()) jvmArgs("--enable-preview")
+    useJUnitPlatform()
 }
 
 java {
@@ -115,6 +116,7 @@ tasks.withType<Javadoc> {
         encoding = "UTF-8"
         locale = "en_US"
         windowTitle = "$projName $projVersion Javadoc"
+        jFlags("-Duser.language=en")
         if (this is StandardJavadocDocletOptions) {
             charSet = "UTF-8"
             isAuthor = true
