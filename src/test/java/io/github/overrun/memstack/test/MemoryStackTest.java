@@ -88,12 +88,14 @@ public class MemoryStackTest {
     }
 
     @Test
-    void testOverflow() {
+    void testExpand() {
         MemoryStack stack = MemoryStack.of();
-        for (int i = 0; i < stack.frameCount(); i++) {
+        int count = stack.frameCount();
+        for (int i = 0; i < count; i++) {
             stack.push();
         }
-        assertThrowsExactly(IndexOutOfBoundsException.class, stack::push);
+        stack.push();
+        assertEquals(count * 3 / 2, stack.frameCount());
     }
 
     @Test

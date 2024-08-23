@@ -1,6 +1,7 @@
 package io.github.overrun.memstack;
 
 import java.lang.foreign.MemorySegment;
+import java.util.Arrays;
 
 /**
  * The default implementation of {@link MemoryStack}.
@@ -10,7 +11,7 @@ import java.lang.foreign.MemorySegment;
  */
 public class DefaultMemoryStack implements MemoryStack {
     private final MemorySegment segment;
-    private final long[] frames;
+    private long[] frames;
     private long offset = 0L;
     private int frameIndex = 0;
 
@@ -47,7 +48,7 @@ public class DefaultMemoryStack implements MemoryStack {
     @Override
     public MemoryStack push() {
         if (frameIndex >= frames.length) {
-            throw new IndexOutOfBoundsException("stack frame overflow; max frame count: " + frames.length);
+            frames = Arrays.copyOf(frames, frames.length * 3 / 2);
         }
         frames[frameIndex] = offset;
         frameIndex++;

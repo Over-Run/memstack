@@ -134,16 +134,17 @@ public interface MemoryStack extends SegmentAllocator, AutoCloseable {
 
     /**
      * Remembers the current offset and pushes a frame for next allocations.
+     * <p>
+     * The memory stack expands the internal frames array by 1.5x if there is not enough space to push.
      *
      * @return {@code this}
-     * @throws IndexOutOfBoundsException if there is not enough frames to push
      */
     MemoryStack push();
 
     /**
      * Pops to the previous frame and sets the current offset.
      *
-     * @throws IndexOutOfBoundsException if there is not enough frames to pop
+     * @throws IndexOutOfBoundsException if the frame index reached the bottom of the stack
      */
     void pop();
 
