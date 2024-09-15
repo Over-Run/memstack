@@ -3,6 +3,7 @@ package io.github.overrun.memstack;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SegmentAllocator;
+import java.util.function.Consumer;
 
 /**
  * <h2>Memory stack</h2>
@@ -16,6 +17,8 @@ import java.lang.foreign.SegmentAllocator;
  * It does not extend {@link Arena} since the memory stack is not supposed to be a long-alive arena allocator.
  * The stack itself does not bind to any segment scope;
  * it just slices the backing segment.
+ * <p>
+ * To re-associate a memory segment with the memory stack, use {@link #asArena()}.
  * <p>
  * Memory stack is not thread-safe;
  * consider using the {@linkplain #ofLocal() local stacks} to manage with threads.
@@ -182,4 +185,14 @@ public interface MemoryStack extends SegmentAllocator, AutoCloseable {
      * {@return the backing memory segment}
      */
     MemorySegment segment();
+
+    /**
+     * Wraps this memory stack into an arena for re-associating a memory segment with
+     * {@link MemorySegment#reinterpret(Arena, Consumer) MemorySegment::reinterpret}.
+     * <p>
+     * The obtained arena closes when this stack is popped.
+     *
+     * @return the arena that wraps this memory stack
+     */
+    Arena asArena();
 }

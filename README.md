@@ -41,6 +41,6 @@ Gradle:
 
 ```groovy
 dependencies {
-    implementation("io.github.over-run:memstack:0.2.0")
+    implementation("io.github.over-run:memstack:0.3.0")
 }
 ```

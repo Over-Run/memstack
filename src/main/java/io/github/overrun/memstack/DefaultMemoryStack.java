@@ -1,5 +1,6 @@
 package io.github.overrun.memstack;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 
@@ -12,7 +13,9 @@ import java.util.Arrays;
 public class DefaultMemoryStack implements MemoryStack {
     private final MemorySegment segment;
     private long[] frames;
+    private Arena[] arenas;
     private long offset = 0L;
+    private Arena arena;
     private int frameIndex = 0;
 
     /**
@@ -24,6 +27,7 @@ public class DefaultMemoryStack implements MemoryStack {
     public DefaultMemoryStack(MemorySegment segment, int frameCount) {
         this.segment = segment;
         this.frames = new long[frameCount];
+        this.arenas = new Arena[frameCount];
     }
 
     private MemorySegment trySlice(long byteSize, long byteAlignment) {
@@ -49,8 +53,10 @@ public class DefaultMemoryStack implements MemoryStack {
     public MemoryStack push() {
         if (frameIndex >= frames.length) {
             frames = Arrays.copyOf(frames, frames.length * 3 / 2);
+            arenas = Arrays.copyOf(arenas, arenas.length * 3 / 2);
         }
         frames[frameIndex] = offset;
+        arenas[frameIndex] = arena;
         frameIndex++;
         return this;
     }
@@ -62,6 +68,10 @@ public class DefaultMemoryStack implements MemoryStack {
         }
         frameIndex--;
         offset = frames[frameIndex];
+        if (arena != null) {
+            arena.close();
+        }
+        arena = arenas[frameIndex];
     }
 
     @Override
@@ -87,5 +97,30 @@ public class DefaultMemoryStack implements MemoryStack {
     @Override
     public MemorySegment segment() {
         return segment;
+    }
+
+    @Override
+    public Arena asArena() {
+        if (arena == null) {
+            arena = new Arena() {
+                private final Arena arena = Arena.ofConfined();
+
+                @Override
+                public MemorySegment allocate(long byteSize, long byteAlignment) {
+                    return DefaultMemoryStack.this.allocate(byteSize, byteAlignment);
+                }
+
+                @Override
+                public MemorySegment.Scope scope() {
+                    return arena.scope();
+                }
+
+                @Override
+                public void close() {
+                    arena.close();
+                }
+            };
+        }
+        return arena;
     }
 }

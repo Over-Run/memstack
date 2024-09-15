@@ -4,10 +4,11 @@ import io.github.overrun.memstack.MemoryStack;
 import io.github.overrun.memstack.StackConfigurations;
 import org.junit.jupiter.api.Test;
 
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author squid233
@@ -107,5 +108,15 @@ public class MemoryStackTest {
     void testOutOfMemory() {
         assertThrowsExactly(IndexOutOfBoundsException.class, () ->
             MemoryStack.of().allocate(StackConfigurations.STACK_SIZE.get() + 1));
+    }
+
+    @Test
+    void testAsArena() {
+        MemorySegment segment;
+        try (MemoryStack stack = MemoryStack.pushLocal()) {
+            segment = stack.allocate(ValueLayout.JAVA_INT)
+                .reinterpret(stack.asArena(), System.out::println);
+        }
+        assertFalse(segment.scope().isAlive());
     }
 }
